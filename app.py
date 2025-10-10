@@ -1,48 +1,36 @@
-from flask import Flask, request, jsonify
-import tensorflow as tf
+from flask import Flask, jsonify
 import yfinance as yf
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
+from tensorflow.keras.models import load_model
+import datetime
 
 app = Flask(__name__)
 
-SEQ_LEN = 60
-MODEL_PATH = "stock_model.keras"
+MODEL_PATH = "backend/stock_model.keras"
 
-# Load model
-model = tf.keras.models.load_model(MODEL_PATH)
+@app.route('/')
+def home():
+    return jsonify({"message": "🚀 Flask Stock Predictor is running on Railway!"})
 
-def prepare_data(ticker, period="1y"):
-    df = yf.download(ticker, period=period, interval="1d")
-    if df.empty:
-        raise ValueError(f"Tidak ada data untuk {ticker}")
-    
-    df = df[['Close']].dropna()
-
-    scaler = MinMaxScaler()
-    data_scaled = scaler.fit_transform(df)
-
-    last_sequence = data_scaled[-SEQ_LEN:]
-    X = np.array(last_sequence).reshape(1, SEQ_LEN, 1)
-    return X, scaler, df
-
-@app.route("/predict", methods=["GET"])
+@app.route('/predict', methods=['GET'])
 def predict():
-    ticker = request.args.get("ticker", default="GGRM.JK")
-    try:
-        X, scaler, df = prepare_data(ticker)
-        pred_scaled = model.predict(X, verbose=0)
-        pred_price = scaler.inverse_transform(pred_scaled)[0][0]
+    model = load_model(MODEL_PATH)
+    ticker = "GGRM.JK"
+    df = yf.download(ticker, period="90d", interval="1d")
 
-        return jsonify({
-            "ticker": ticker,
-            "last_close": float(df['Close'].iloc[-1]),
-            "predicted_next": float(pred_price)
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    scaled = scaler.fit_transform(df['Close'].values.reshape(-1, 1))
 
-if __name__ == "__main__":
-    import os
-    port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port)
+    x_input = scaled[-60:].reshape(1, 60, 1)
+    pred_scaled = model.predict(x_input)
+    pred_price = scaler.inverse_transform(pred_scaled)[0][0]
+
+    return jsonify({
+        "ticker": ticker,
+        "predicted_price": float(pred_price),
+        "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    })
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)

@@ -1,4 +1,10 @@
-# -----------------------------
+import os
+
+# Lokasi file .gitignore
+gitignore_path = ".gitignore"
+
+# Template isi .gitignore
+gitignore_content = """# -----------------------------
 # Flutter / Dart
 # -----------------------------
 build/
@@ -78,3 +84,24 @@ Thumbs.db
 !runtime.txt
 !Backend.py
 !train_realtime.py
+"""
+
+# Buat / update file .gitignore
+with open(gitignore_path, "w") as f:
+    f.write(gitignore_content)
+
+print("✅ File .gitignore berhasil dibuat/diperbarui!")
+
+# Jika belum ada folder backend, buat
+if not os.path.exists("backend"):
+    os.makedirs("backend")
+    print("📁 Folder 'backend' dibuat.")
+
+# Pastikan model placeholder ada
+model_path = "backend/stock_model.keras"
+if not os.path.exists(model_path):
+    with open(model_path, "w") as f:
+        f.write("")  # placeholder kosong
+    print("🧠 File model placeholder dibuat: backend/stock_model.keras")
+
+print("🚀 Semua konfigurasi Git & model siap untuk Railway Deployment!")

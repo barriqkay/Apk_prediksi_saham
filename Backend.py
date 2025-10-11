@@ -5,13 +5,30 @@ import yfinance as yf
 from sklearn.preprocessing import MinMaxScaler
 import joblib
 import datetime
+import os
+import requests
 
 app = Flask(__name__)
 
-# Load model and scaler
+# Model and scaler paths
 MODEL_PATH = "stock_model.keras"
 SCALER_PATH = "stock_scaler.pkl"
 Y_SCALER_PATH = "y_scaler.pkl"
+
+# Download files if not present
+def download_file(url, path):
+    if not os.path.exists(path):
+        print(f"Downloading {path}...")
+        response = requests.get(url)
+        with open(path, 'wb') as f:
+            f.write(response.content)
+        print(f"Downloaded {path}")
+
+download_file("https://raw.githubusercontent.com/barriqkay/Apk_prediksi_saham/main/stock_model.keras", MODEL_PATH)
+download_file("https://raw.githubusercontent.com/barriqkay/Apk_prediksi_saham/main/stock_scaler.pkl", SCALER_PATH)
+download_file("https://raw.githubusercontent.com/barriqkay/Apk_prediksi_saham/main/y_scaler.pkl", Y_SCALER_PATH)
+
+# Load model and scaler
 model = tf.keras.models.load_model(MODEL_PATH)
 scaler = joblib.load(SCALER_PATH)
 y_scaler = joblib.load(Y_SCALER_PATH)

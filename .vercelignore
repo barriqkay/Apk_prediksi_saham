@@ -1,0 +1,6 @@
+stock_model.keras
+stock_scaler.pkl
+backend/stock_model.keras
+backend/stock_scaler.pkl
+backend/model/stock_model.keras
+backend/model/stock_model.h5

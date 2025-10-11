@@ -52,7 +52,6 @@ __pycache__/
 # Model & Dataset (Large files)
 # -----------------------------
 *.h5
-*.keras
 *.pkl
 *.ckpt
 *.csv

@@ -9,27 +9,24 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final TextEditingController _controller = TextEditingController();
-  double? _price;
+  Map<String, dynamic>? _predictionData;
   bool _isLoading = false;
+  String? _error;
 
-  Future<void> _getStockPrice() async {
-    setState(() => _isLoading = true);
+  Future<void> _getPrediction() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
 
-    final symbol = _controller.text.trim().toUpperCase();
-    if (symbol.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Masukkan kode saham terlebih dahulu")),
-      );
-      setState(() => _isLoading = false);
-      return;
-    }
-
-    final price = await ApiService.fetchStockPrice(symbol);
+    final data = await ApiService.fetchPrediction();
 
     setState(() {
-      _price = price;
+      _predictionData = data;
       _isLoading = false;
+      if (data == null) {
+        _error = "Gagal mendapatkan prediksi";
+      }
     });
   }
 
@@ -38,7 +35,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A), // navy gelap
       appBar: AppBar(
-        title: const Text("Prediksi Saham"),
+        title: const Text("Prediksi Saham GGRM.JK"),
         backgroundColor: const Color(0xFF1E293B),
         elevation: 0,
       ),
@@ -47,25 +44,17 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            TextField(
-              controller: _controller,
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                hintText: "Masukkan kode saham (ex: AAPL)",
-                hintStyle: const TextStyle(color: Colors.grey),
-                filled: true,
-                fillColor: const Color(0xFF1E293B),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                prefixIcon: const Icon(Icons.search, color: Colors.white),
-              ),
+            const Text(
+              "Prediksi harga saham Gudang Garam (GGRM.JK) menggunakan AI",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white, fontSize: 16),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
 
-            ElevatedButton(
-              onPressed: _getStockPrice,
+            ElevatedButton.icon(
+              onPressed: _getPrediction,
+              icon: const Icon(Icons.analytics),
+              label: const Text("Dapatkan Prediksi"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.tealAccent[700],
                 foregroundColor: Colors.white,
@@ -74,13 +63,25 @@ class _HomePageState extends State<HomePage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text("Prediksi Harga"),
             ),
             const SizedBox(height: 30),
 
-            if (_price != null)
+            if (_isLoading)
+              const CircularProgressIndicator(color: Colors.tealAccent),
+
+            if (_error != null)
+              Card(
+                color: Colors.red[900],
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    _error!,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+
+            if (_predictionData != null && !_isLoading)
               Card(
                 color: const Color(0xFF1E293B),
                 shape: RoundedRectangleBorder(
@@ -92,7 +93,7 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                     children: [
                       Text(
-                        "Hasil Prediksi",
+                        "Hasil Prediksi ${_predictionData!['ticker']}",
                         style: TextStyle(
                           color: Colors.tealAccent[400],
                           fontSize: 20,
@@ -101,17 +102,17 @@ class _HomePageState extends State<HomePage> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        "\$${_price!.toStringAsFixed(2)}",
+                        "Rp ${_predictionData!['predicted_price'].toStringAsFixed(2)}",
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 28,
+                          fontSize: 32,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        "Harga berdasarkan data Yahoo Finance",
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                      Text(
+                        "Tanggal: ${_predictionData!['date']}",
+                        style: const TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                     ],
                   ),

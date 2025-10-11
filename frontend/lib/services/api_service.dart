@@ -3,22 +3,23 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = "https://stock-backend.up.railway.app";
+  // Ganti dengan URL Railway kamu
+  static const String baseUrl = "https://YOUR-RAILWAY-URL.up.railway.app";
 
-  static Future<double?> fetchStockPrice(String symbol) async {
+  static Future<Map<String, dynamic>?> fetchPrediction() async {
     try {
-      final url = Uri.parse("$baseUrl/predict?symbol=$symbol");
+      final url = Uri.parse("$baseUrl/predict");
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-
-        if (data['price'] != null) {
-          return (data['price'] as num).toDouble();
+        return data;
+      } else {
+        if (kDebugMode) {
+          print("API Error: ${response.statusCode}");
         }
+        return null;
       }
-
-      return null;
     } catch (e) {
       if (kDebugMode) {
         print("API Error: $e");

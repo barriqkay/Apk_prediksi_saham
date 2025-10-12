@@ -1,14 +1,14 @@
 { pkgs }: {
   deps = [
-    pkgs.python310
-    pkgs.python310Packages.pip
-    pkgs.python310Packages.flask
-    pkgs.python310Packages.tensorflow
-    pkgs.python310Packages.gunicorn
-    pkgs.python310Packages.yfinance
-    pkgs.python310Packages.pandas
-    pkgs.python310Packages.numpy
-    pkgs.python310Packages.scikit-learn
-    pkgs.python310Packages.matplotlib
+    pkgs.python311
+    pkgs.python311Packages.pip
+    pkgs.python311Packages.flask
+    pkgs.python311Packages.tensorflow
+    pkgs.python311Packages.yfinance
+    pkgs.python311Packages.pandas
+    pkgs.python311Packages.numpy
+    pkgs.python311Packages.scikit-learn
+    pkgs.python311Packages.matplotlib
+    pkgs.python311Packages.gunicorn
   ];
 }
